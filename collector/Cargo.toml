@@ -1,0 +1,10 @@
+[package]
+name = "collector"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+shared_data = {path = "../shared_data" }
+sysinfo = { version = "0.29.7", features = ["apple-app-store"] }
+thiserror = "1.0.63"
+uuid = { version = "1.10.0", features = ["fast-rng", "v4"] }
