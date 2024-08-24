@@ -25,10 +25,12 @@ pub enum CollectorCommandV1 {
 }
 
 pub fn encode_v1(command: &CollectorCommandV1) -> Vec<u8> {
-    let json = serde_json::to_string(&command).unwrap();
-    let json_bytes = json.as_bytes();
-    let crc = crc32fast::hash(json_bytes);
-    let payload_size = json_bytes.len() as u32;
+    // let json = serde_json::to_string(&command).unwrap();
+    // let json_bytes = json.as_bytes();
+
+    let payload_bytes = bincode::serialize(command).unwrap();
+    let crc = crc32fast::hash(&payload_bytes);
+    let payload_size = payload_bytes.len() as u32;
     let timestamp = unix_now();
 
     // Encode into bytes
@@ -37,7 +39,7 @@ pub fn encode_v1(command: &CollectorCommandV1) -> Vec<u8> {
     result.extend_from_slice(&VERSION_NUMBER.to_be_bytes());
     result.extend_from_slice(&timestamp.to_be_bytes());
     result.extend_from_slice(&payload_size.to_be_bytes());
-    result.extend_from_slice(json_bytes);
+    result.extend_from_slice(&payload_bytes);
     result.extend_from_slice(&crc.to_be_bytes());
     result
 }
@@ -67,7 +69,7 @@ pub fn decode_v1(bytes: &[u8]) -> (u32, CollectorCommandV1) {
     assert_eq!(crc, computed_crc);
 
     // Decode the payload
-    (timestamp, serde_json::from_slice(payload).unwrap())
+    (timestamp, bincode::deserialize(payload).unwrap())
 }
 
 
